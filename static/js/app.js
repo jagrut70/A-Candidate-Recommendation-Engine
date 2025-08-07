@@ -6,6 +6,9 @@ let manualCandidates = [];
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     try {
+        // Initialize theme
+        initializeTheme();
+        
         // Show loading screen for 2 seconds
         setTimeout(() => {
             const loadingScreen = document.getElementById('loadingScreen');
@@ -47,10 +50,47 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
+        // Set up theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', toggleTheme);
+        }
+        
     } catch (error) {
         console.error('Error in DOMContentLoaded:', error);
     }
 });
+
+// Theme management functions
+function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    } else if (prefersDark) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+    } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+    }
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    // Add a subtle animation effect
+    document.body.style.transition = 'background 0.3s ease, color 0.3s ease';
+    
+    // Show toast notification
+    const themeText = newTheme === 'dark' ? 'Dark' : 'Light';
+    showToast(`${themeText} mode activated`, 'info');
+}
 
 function setupEventListeners() {
     // Job description input listener
@@ -444,6 +484,43 @@ function displayRecommendations(recommendations, totalCandidates) {
                         <div class="score-label">Match Score</div>
                     </div>
                 </div>
+                <!-- Key Skill Matches Section -->
+                ${candidate.skill_matches && Object.keys(candidate.skill_matches).length > 0 ? `
+                <div class="skill-matches-section">
+                    <div class="skill-matches-header">
+                        <i class="fas fa-tags"></i>
+                        <span>Key Skill Matches</span>
+                    </div>
+                    <div class="skill-matches-content">
+                        <div class="skill-categories">
+                            ${Object.entries(candidate.skill_matches).map(([category, skills]) => `
+                                <div class="skill-category">
+                                    <div class="category-name">${formatCategoryName(category)}</div>
+                                    <div class="skill-tags">
+                                        ${skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+                
+                <!-- Top Skills Summary -->
+                ${candidate.top_skills && candidate.top_skills.length > 0 ? `
+                <div class="top-skills-summary">
+                    <div class="top-skills-header">
+                        <i class="fas fa-star"></i>
+                        <span>Top Matching Skills</span>
+                    </div>
+                    <div class="top-skills-content">
+                        <div class="top-skills-tags">
+                            ${candidate.top_skills.map(skill => `<span class="top-skill-tag">${skill}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+                
                 <div class="ai-summary">
                     <strong>AI Analysis:</strong> ${candidate.ai_summary}
                 </div>
@@ -459,6 +536,10 @@ function getSimilarityClass(score) {
     if (score >= 0.7) return 'high';
     if (score >= 0.4) return 'medium';
     return 'low';
+}
+
+function formatCategoryName(category) {
+    return category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }
 
 function showLoading(show) {

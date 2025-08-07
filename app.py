@@ -8,6 +8,7 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import openai
 from dotenv import load_dotenv
+from skill_extractor import skill_extractor
 
 # Load environment variables
 load_dotenv()
@@ -60,21 +61,26 @@ def compute_similarity(job_embedding, resume_embeddings):
     return similarities
 
 def generate_ai_summary(job_description, candidate_info, similarity_score):
-    """Generate AI summary for why candidate is a good fit"""
+    """Generate AI summary for why candidate is a good fit with skill extraction"""
     print(f"Generating AI summary for candidate with similarity score: {similarity_score:.3f}")
     print(f"OpenAI API Key configured: {'Yes' if openai.api_key else 'No'}")
     
     try:
-        prompt = f"""
-        Job Description: {job_description}
+        # Extract skills from job description and candidate info
+        print("Extracting skills from job description and candidate info...")
+        job_skills = skill_extractor.extract_skills_from_text(job_description)
+        candidate_skills = skill_extractor.extract_skills_from_text(candidate_info)
         
-        Candidate Information: {candidate_info}
-        Similarity Score: {similarity_score:.3f}
+        # Match skills between job and candidate
+        skill_matches = skill_extractor.match_skills(job_skills, candidate_skills)
+        print(f"Found skill matches: {skill_matches}")
         
-        Please provide a brief, professional summary (2-3 sentences) explaining why this candidate would be a good fit for this role based on the information provided. Focus on key skills and experience that align with the job requirements.
-        """
+        # Generate enhanced prompt with skill information
+        enhanced_prompt = skill_extractor.enhance_ai_prompt(
+            job_description, candidate_info, skill_matches, similarity_score
+        )
         
-        print("Sending request to OpenAI API...")
+        print("Sending enhanced request to OpenAI API...")
         
         # Use the new OpenAI API syntax (v1.0.0+)
         from openai import OpenAI
@@ -83,20 +89,32 @@ def generate_ai_summary(job_description, candidate_info, similarity_score):
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a professional HR assistant helping to evaluate job candidates."},
-                {"role": "user", "content": prompt}
+                {"role": "system", "content": "You are a professional HR assistant helping to evaluate job candidates. Focus on specific skills and experience that match the job requirements."},
+                {"role": "user", "content": enhanced_prompt}
             ],
-            max_tokens=150,
+            max_tokens=200,
             temperature=0.7
         )
         
         summary = response.choices[0].message.content.strip()
         print(f"AI summary generated successfully: {summary[:100]}...")
-        return summary
+        
+        # Return both summary and skill matches
+        return {
+            'summary': summary,
+            'skill_matches': skill_matches,
+            'skill_summary': skill_extractor.get_skill_summary(skill_matches),
+            'top_skills': skill_extractor.get_top_skills(skill_matches, 5)
+        }
     except Exception as e:
         print(f"Error generating AI summary: {str(e)}")
         print(f"Error type: {type(e).__name__}")
-        return f"AI summary unavailable. Similarity score: {similarity_score:.3f}"
+        return {
+            'summary': f"AI summary unavailable. Similarity score: {similarity_score:.3f}",
+            'skill_matches': {},
+            'skill_summary': "Skill extraction unavailable",
+            'top_skills': []
+        }
 
 @app.route('/')
 def index():
@@ -180,15 +198,18 @@ def recommend():
     for i, candidate in enumerate(candidates):
         similarity_score = float(similarities[i])
         
-        # Generate AI summary
-        ai_summary = generate_ai_summary(job_description, candidate['content'], similarity_score)
-        print(f"AI summary for {candidate['name']}: {ai_summary[:100]}...")
+        # Generate AI summary with skill extraction
+        ai_result = generate_ai_summary(job_description, candidate['content'], similarity_score)
+        print(f"AI summary for {candidate['name']}: {ai_result['summary'][:100]}...")
         
         result = {
             'id': candidate['id'],
             'name': candidate['name'],
             'similarity_score': similarity_score,
-            'ai_summary': ai_summary,
+            'ai_summary': ai_result['summary'],
+            'skill_matches': ai_result['skill_matches'],
+            'skill_summary': ai_result['skill_summary'],
+            'top_skills': ai_result['top_skills'],
             'filename': candidate['filename']
         }
         results.append(result)
@@ -248,14 +269,17 @@ def manual_input():
     for i, candidate in enumerate(candidates):
         similarity_score = float(similarities[i])
         
-        # Generate AI summary
-        ai_summary = generate_ai_summary(job_description, candidate['content'], similarity_score)
+        # Generate AI summary with skill extraction
+        ai_result = generate_ai_summary(job_description, candidate['content'], similarity_score)
         
         result = {
             'id': candidate['id'],
             'name': candidate['name'],
             'similarity_score': similarity_score,
-            'ai_summary': ai_summary,
+            'ai_summary': ai_result['summary'],
+            'skill_matches': ai_result['skill_matches'],
+            'skill_summary': ai_result['skill_summary'],
+            'top_skills': ai_result['top_skills'],
             'filename': candidate['filename']
         }
         results.append(result)
