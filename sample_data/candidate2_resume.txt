@@ -1,0 +1,43 @@
+Sarah Johnson
+Full Stack Developer
+sarah.johnson@email.com | (555) 987-6543 | linkedin.com/in/sarahjohnson
+
+PROFESSIONAL SUMMARY
+Passionate full-stack developer with 4 years of experience building modern web applications. Strong focus on user experience, performance optimization, and clean code architecture.
+
+EXPERIENCE
+
+Full Stack Developer at WebSolutions Inc. (2020-2023)
+- Developed and maintained 5+ client websites using React, Node.js, and MongoDB
+- Implemented responsive design and ensured cross-platform compatibility
+- Optimized application performance resulting in 40% faster load times
+- Collaborated with designers and product managers to implement new features
+- Participated in code reviews and maintained coding standards
+
+Junior Developer at DigitalAgency (2019-2020)
+- Built interactive web components using JavaScript and CSS
+- Assisted in database design and API development
+- Worked with version control systems and deployment processes
+- Learned agile development methodologies and team collaboration
+
+TECHNICAL SKILLS
+Programming Languages: JavaScript, Python, HTML/CSS, SQL
+Frameworks & Libraries: React, Vue.js, Node.js, Express, Bootstrap
+Databases: MongoDB, MySQL, PostgreSQL
+Cloud Services: Heroku, Netlify, AWS (basic)
+Tools: Git, VS Code, Postman, Figma
+Other: RESTful APIs, JSON, AJAX, Responsive Design
+
+EDUCATION
+Bachelor of Arts in Computer Science
+State University, 2019
+Minor in Design
+
+PROJECTS
+- E-commerce platform with payment integration (React + Node.js)
+- Task management application with real-time updates
+- Portfolio website with modern animations and responsive design
+- Weather app using external APIs and geolocation
+
+LANGUAGES
+English (Native), Spanish (Conversational) 

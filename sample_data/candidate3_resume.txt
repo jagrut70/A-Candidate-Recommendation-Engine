@@ -1,0 +1,50 @@
+Michael Chen
+Data Scientist
+michael.chen@email.com | (555) 456-7890 | linkedin.com/in/michaelchen
+
+PROFESSIONAL SUMMARY
+Data scientist with 3 years of experience in machine learning, statistical analysis, and data visualization. Passionate about turning complex data into actionable insights.
+
+EXPERIENCE
+
+Data Scientist at AnalyticsCorp (2021-2023)
+- Developed machine learning models for customer segmentation and churn prediction
+- Created data pipelines using Python, Pandas, and Apache Spark
+- Built interactive dashboards using Tableau and Power BI
+- Collaborated with business stakeholders to define KPIs and metrics
+- Presented findings to executive leadership and technical teams
+
+Data Analyst at StartupData (2020-2021)
+- Performed exploratory data analysis on large datasets
+- Created automated reports and visualizations
+- Assisted in A/B testing design and analysis
+- Worked with SQL databases and data warehouses
+
+TECHNICAL SKILLS
+Programming Languages: Python, R, SQL, JavaScript
+Machine Learning: Scikit-learn, TensorFlow, PyTorch, Keras
+Data Analysis: Pandas, NumPy, Matplotlib, Seaborn, Plotly
+Databases: PostgreSQL, MySQL, MongoDB, Redis
+Big Data: Apache Spark, Hadoop, Hive
+Cloud Platforms: AWS (S3, EC2, SageMaker), Google Cloud Platform
+Tools: Jupyter Notebook, Git, Docker, Tableau, Power BI
+
+EDUCATION
+Master of Science in Data Science
+Tech University, 2020
+Bachelor of Science in Mathematics
+State College, 2018
+
+CERTIFICATIONS
+- AWS Certified Machine Learning - Specialty
+- Google Cloud Professional Data Engineer
+
+PROJECTS
+- Customer lifetime value prediction model (Python + Scikit-learn)
+- Real-time recommendation system using collaborative filtering
+- Natural language processing pipeline for sentiment analysis
+- Time series forecasting for sales prediction
+
+PUBLICATIONS
+- "Machine Learning Approaches to Customer Segmentation" - Data Science Conference 2022
+- "Optimizing Recommendation Systems for E-commerce" - Tech Blog 

@@ -1,0 +1,44 @@
+John Smith
+Senior Software Engineer
+john.smith@email.com | (555) 123-4567 | linkedin.com/in/johnsmith
+
+PROFESSIONAL SUMMARY
+Experienced software engineer with 6+ years of expertise in full-stack development, cloud architecture, and team leadership. Proven track record of delivering scalable solutions and mentoring junior developers.
+
+EXPERIENCE
+
+Senior Developer at TechCorp (2019-2023)
+- Led development of microservices architecture using Python, Docker, and Kubernetes
+- Implemented CI/CD pipelines reducing deployment time by 60% and improving code quality
+- Mentored 3 junior developers and conducted regular code reviews
+- Worked extensively with AWS services including EC2, S3, Lambda, and RDS
+- Collaborated with cross-functional teams to deliver features on time and within budget
+- Participated in agile development processes and sprint planning
+
+Software Engineer at StartupXYZ (2017-2019)
+- Developed full-stack web applications using React, Node.js, and PostgreSQL
+- Collaborated with product team to deliver user-centric features
+- Implemented responsive design principles and ensured cross-browser compatibility
+- Participated in code reviews and contributed to technical architecture decisions
+
+TECHNICAL SKILLS
+Programming Languages: Python, JavaScript, TypeScript, SQL, HTML/CSS
+Frameworks & Libraries: React, Node.js, Express, Django, Flask
+Cloud & DevOps: AWS (EC2, S3, Lambda, RDS), Docker, Kubernetes, Jenkins
+Databases: PostgreSQL, MongoDB, Redis
+Tools & Platforms: Git, VS Code, JIRA, Confluence, Slack
+Methodologies: Agile, Scrum, TDD, CI/CD
+
+EDUCATION
+Bachelor of Science in Computer Science
+University of Technology, 2017
+GPA: 3.8/4.0
+
+CERTIFICATIONS
+- AWS Certified Solutions Architect - Associate
+- Certified Scrum Master (CSM)
+
+PROJECTS
+- Built a real-time collaboration platform using WebSockets and React
+- Developed a machine learning pipeline for customer behavior analysis
+- Contributed to open-source projects on GitHub with 500+ stars 
