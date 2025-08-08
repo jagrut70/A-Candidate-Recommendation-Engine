@@ -2,16 +2,9 @@ import streamlit as st
 import os
 import json
 import uuid
-import numpy as np
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
-import openai
-from dotenv import load_dotenv
-from skill_extractor import skill_extractor
+import re
+from collections import Counter
 import pandas as pd
-
-# Load environment variables
-load_dotenv()
 
 # Configure page
 st.set_page_config(
@@ -25,72 +18,73 @@ st.set_page_config(
 if 'candidates' not in st.session_state:
     st.session_state.candidates = []
 
-# Initialize the sentence transformer model
-@st.cache_resource
-def load_model():
-    return SentenceTransformer('all-MiniLM-L6-v2')
+# Simple skill extraction without external dependencies
+def extract_skills_simple(text):
+    """Simple skill extraction using keyword matching"""
+    skills = {
+        'programming_languages': ['python', 'javascript', 'java', 'c++', 'c#', 'go', 'rust', 'php', 'ruby', 'swift', 'kotlin', 'scala', 'r', 'matlab', 'typescript'],
+        'frameworks': ['react', 'angular', 'vue', 'django', 'flask', 'express', 'spring', 'laravel', 'rails', 'asp.net', 'fastapi', 'node.js', 'bootstrap', 'jquery'],
+        'databases': ['mysql', 'postgresql', 'mongodb', 'redis', 'sqlite', 'oracle', 'sql server', 'mariadb', 'cassandra', 'dynamodb'],
+        'cloud_devops': ['aws', 'azure', 'gcp', 'docker', 'kubernetes', 'jenkins', 'gitlab', 'github', 'terraform', 'ansible', 'ci/cd'],
+        'tools': ['git', 'jira', 'confluence', 'slack', 'vscode', 'intellij', 'eclipse', 'postman', 'swagger', 'figma', 'adobe']
+    }
+    
+    text_lower = text.lower()
+    found_skills = {}
+    
+    for category, skill_list in skills.items():
+        found_skills[category] = []
+        for skill in skill_list:
+            if skill in text_lower:
+                found_skills[category].append(skill)
+    
+    return found_skills
 
-model = load_model()
+def compute_similarity_simple(job_text, candidate_text):
+    """Simple text similarity using word overlap"""
+    # Convert to lowercase and split into words
+    job_words = set(re.findall(r'\b\w+\b', job_text.lower()))
+    candidate_words = set(re.findall(r'\b\w+\b', candidate_text.lower()))
+    
+    # Remove common stop words
+    stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'mine', 'yours', 'his', 'hers', 'ours', 'theirs'}
+    
+    job_words = job_words - stop_words
+    candidate_words = candidate_words - stop_words
+    
+    # Calculate Jaccard similarity
+    if len(job_words) == 0 or len(candidate_words) == 0:
+        return 0.0
+    
+    intersection = len(job_words.intersection(candidate_words))
+    union = len(job_words.union(candidate_words))
+    
+    return intersection / union if union > 0 else 0.0
 
-# Configure OpenAI
-openai.api_key = os.getenv('OPENAI_API_KEY')
-
-def generate_embeddings(texts):
-    """Generate embeddings for a list of texts"""
-    embeddings = model.encode(texts, convert_to_tensor=True)
-    return embeddings.cpu().numpy()
-
-def compute_similarity(job_embedding, resume_embeddings):
-    """Compute cosine similarity between job and resumes"""
-    similarities = cosine_similarity([job_embedding], resume_embeddings)[0]
-    return similarities
-
-def generate_ai_summary(job_description, candidate_info, similarity_score):
-    """Generate AI summary for why candidate is a good fit with skill extraction"""
-    try:
-        # Extract skills from job description and candidate info
-        job_skills = skill_extractor.extract_skills_from_text(job_description)
-        candidate_skills = skill_extractor.extract_skills_from_text(candidate_info)
+def generate_summary_simple(job_description, candidate_info, similarity_score, skill_matches):
+    """Generate a simple summary without OpenAI"""
+    summary = f"This candidate has a similarity score of {similarity_score:.1%}. "
+    
+    if skill_matches:
+        skill_text = []
+        for category, skills in skill_matches.items():
+            if skills:
+                skill_text.append(f"{', '.join(skills)} ({category.replace('_', ' ')})")
         
-        # Match skills between job and candidate
-        skill_matches = skill_extractor.match_skills(job_skills, candidate_skills)
-        
-        # Generate enhanced prompt with skill information
-        enhanced_prompt = skill_extractor.enhance_ai_prompt(
-            job_description, candidate_info, skill_matches, similarity_score
-        )
-        
-        # Use the new OpenAI API syntax
-        from openai import OpenAI
-        client = OpenAI(api_key=openai.api_key)
-        
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a professional HR assistant helping to evaluate job candidates. Focus on specific skills and experience that match the job requirements."},
-                {"role": "user", "content": enhanced_prompt}
-            ],
-            max_tokens=200,
-            temperature=0.7
-        )
-        
-        summary = response.choices[0].message.content.strip()
-        
-        return {
-            'summary': summary,
-            'skill_matches': skill_matches,
-            'skill_summary': skill_extractor.get_skill_summary(skill_matches),
-            'top_skills': skill_extractor.get_top_skills(skill_matches, 5)
-        }
-        
-    except Exception as e:
-        st.error(f"Error generating AI summary: {e}")
-        return {
-            'summary': f"AI summary unavailable. Similarity score: {similarity_score:.3f}",
-            'skill_matches': {},
-            'skill_summary': "Skill extraction unavailable",
-            'top_skills': []
-        }
+        if skill_text:
+            summary += f"Key matching skills: {'; '.join(skill_text)}. "
+    
+    # Add some context based on similarity score
+    if similarity_score > 0.7:
+        summary += "This candidate appears to be an excellent match for the position."
+    elif similarity_score > 0.5:
+        summary += "This candidate shows good potential for the role."
+    elif similarity_score > 0.3:
+        summary += "This candidate has some relevant experience but may need additional training."
+    else:
+        summary += "This candidate may not be the best fit for this specific role."
+    
+    return summary
 
 def main():
     # Header
@@ -107,21 +101,15 @@ def main():
         )
         
         st.markdown("---")
-        st.markdown("### 🔧 Settings")
+        st.markdown("### 🔧 About This App")
+        st.info("""
+        This app uses:
+        • **Text similarity analysis**
+        • **Skill keyword matching**
+        • **Simple but effective algorithms**
         
-        # OpenAI API Key input
-        api_key = st.text_input(
-            "OpenAI API Key (for AI summaries)",
-            type="password",
-            value=os.getenv('OPENAI_API_KEY', ''),
-            help="Enter your OpenAI API key to enable AI-powered summaries"
-        )
-        
-        if api_key:
-            openai.api_key = api_key
-            st.success("✅ OpenAI API key configured")
-        else:
-            st.warning("⚠️ OpenAI API key not provided - AI summaries will be disabled")
+        No external APIs required!
+        """)
     
     # Main content
     col1, col2 = st.columns([1, 1])
@@ -161,7 +149,7 @@ def main():
             # File upload
             uploaded_files = st.file_uploader(
                 "Upload candidate resumes:",
-                type=['txt', 'pdf', 'doc', 'docx'],
+                type=['txt'],
                 accept_multiple_files=True
             )
             
@@ -190,31 +178,35 @@ def main():
             return
         
         with st.spinner("Analyzing candidates..."):
-            # Generate embeddings
-            texts = [job_description] + [candidate['content'] for candidate in st.session_state.candidates]
-            embeddings = generate_embeddings(texts)
-            
-            # Compute similarities
-            job_embedding = embeddings[0]
-            resume_embeddings = embeddings[1:]
-            similarities = compute_similarity(job_embedding, resume_embeddings)
-            
-            # Create results
+            # Process candidates
             results = []
-            for i, candidate in enumerate(st.session_state.candidates):
-                similarity_score = float(similarities[i])
+            for candidate in st.session_state.candidates:
+                # Compute similarity
+                similarity_score = compute_similarity_simple(job_description, candidate['content'])
                 
-                # Generate AI summary
-                ai_result = generate_ai_summary(job_description, candidate['content'], similarity_score)
+                # Extract skills
+                job_skills = extract_skills_simple(job_description)
+                candidate_skills = extract_skills_simple(candidate['content'])
+                
+                # Find matching skills
+                skill_matches = {}
+                for category in job_skills:
+                    if category in candidate_skills:
+                        matches = list(set(job_skills[category]) & set(candidate_skills[category]))
+                        if matches:
+                            skill_matches[category] = matches
+                
+                # Generate summary
+                summary = generate_summary_simple(job_description, candidate['content'], similarity_score, skill_matches)
                 
                 result = {
                     'id': candidate['id'],
                     'name': candidate['name'],
                     'similarity_score': similarity_score,
-                    'ai_summary': ai_result['summary'],
-                    'skill_matches': ai_result['skill_matches'],
-                    'skill_summary': ai_result['skill_summary'],
-                    'top_skills': ai_result['top_skills'],
+                    'ai_summary': summary,
+                    'skill_matches': skill_matches,
+                    'skill_summary': f"Found {sum(len(skills) for skills in skill_matches.values())} matching skills",
+                    'top_skills': [skill for skills in skill_matches.values() for skill in skills][:5],
                     'filename': candidate['filename']
                 }
                 results.append(result)
@@ -249,8 +241,8 @@ def main():
                             skills_text = " • ".join(result['top_skills'])
                             st.markdown(f"`{skills_text}`")
                         
-                        # AI Summary
-                        st.markdown("**🤖 AI Analysis:**")
+                        # Summary
+                        st.markdown("**🤖 Analysis:**")
                         st.write(result['ai_summary'])
                     
                     with col2:
@@ -267,7 +259,7 @@ def main():
     st.markdown(
         """
         <div style='text-align: center; color: #666;'>
-        <p>🎯 AI Candidate Matcher | Powered by Sentence Transformers & OpenAI</p>
+        <p>🎯 AI Candidate Matcher | Powered by Text Analysis & Skill Matching</p>
         </div>
         """,
         unsafe_allow_html=True
