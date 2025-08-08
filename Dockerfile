@@ -22,12 +22,11 @@ COPY . .
 # Create uploads directory
 RUN mkdir -p uploads
 
-# Expose port
-EXPOSE 8080
-
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
-ENV PORT=8080
 
-# Run the application
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--timeout", "120", "app_simple:app"]
+# Expose port (will be overridden by Railway)
+EXPOSE 8080
+
+# Run the application with dynamic port
+CMD gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 app_simple:app
