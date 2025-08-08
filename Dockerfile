@@ -28,5 +28,5 @@ ENV PYTHONUNBUFFERED=1
 # Expose port (will be overridden by Railway)
 EXPOSE 8080
 
-# Run the application with dynamic port and logging
-CMD gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 --log-level info app_railway:app
+# Run the minimal application with dynamic port and logging
+CMD gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 --log-level info app_minimal:app
