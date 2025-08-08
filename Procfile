@@ -1,1 +1,1 @@
-web: python railway_startup.py && gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 app:app 
+web: python railway_startup_simple.py && gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 app_simple:app 
